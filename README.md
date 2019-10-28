@@ -1,5 +1,10 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Project Features
+This project was developed using React JS, styled-components, React Router and Axios 
+
+My objective with this project was have fun with GitHub API, building an app that consumes this API and provides to the user functionalities such as search for an specif repository, and see informations about issues related to this repository.
+
 ## Available Scripts
 
 In the project directory, you can run:

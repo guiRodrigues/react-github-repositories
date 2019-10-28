@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { FaGithub, FaPlus, FaSpinner } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
-import { Form, SubmitButton, List } from './styles';
+import { Form, Input, SubmitButton, List } from './styles';
 import Container from '../../components/Container';
 import api from '../../services/api';
 
@@ -15,6 +15,7 @@ export default class Main extends Component {
     newRepo: '',
     repositories: [],
     loading: false,
+    repoError: false,
   };
 
   // Load data from local storage
@@ -38,22 +39,36 @@ export default class Main extends Component {
   };
 
   handleSubmit = async event => {
-    event.preventDefault();
-    this.setState({ loading: true });
-    const { newRepo, repositories } = this.state;
-    const response = await api.get(`/repos/${newRepo}`);
-    const data = {
-      name: response.data.full_name,
-    };
-    this.setState({
-      repositories: [...repositories, data],
-      newRepo: '',
-      loading: false,
-    });
+    try {
+      event.preventDefault();
+      this.setState({ loading: true });
+      const { newRepo, repositories } = this.state;
+
+      const exists = repositories.find(
+        repository => repository.name === newRepo
+      );
+
+      if (exists) {
+        throw new Error('Duplicate repository');
+      }
+
+      const response = await api.get(`/repos/${newRepo}`);
+      const data = {
+        name: response.data.full_name,
+      };
+      this.setState({
+        repositories: [...repositories, data],
+        newRepo: '',
+        loading: false,
+        repoError: false,
+      });
+    } catch (e) {
+      this.setState({ repoError: true, newRepo: '', loading: false });
+    }
   };
 
   render() {
-    const { newRepo, loading, repositories } = this.state;
+    const { newRepo, loading, repositories, repoError } = this.state;
     return (
       <Container>
         <h1>
@@ -61,11 +76,12 @@ export default class Main extends Component {
           Repositories
         </h1>
         <Form onSubmit={this.handleSubmit}>
-          <input
+          <Input
             type="text"
             placeholder="Repository name"
             value={newRepo}
             onChange={this.handleInputChange}
+            gotError={repoError}
           />
           <SubmitButton loading={loading}>
             {loading ? (
